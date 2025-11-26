@@ -1,26 +1,38 @@
 import { Request, Response } from "express";
 import { OrderRepository } from "../../infrastructure/repositories/order.repository";
+import { OrderUseCase } from "../../domain/usecases/order.usecase";
+import { UseCaseError } from "../../domain/usecases/errors";
 
 const orderRepository = new OrderRepository();
+const orderUseCase = new OrderUseCase(orderRepository);
 
 export class OrderController {
   async list(_req: Request, res: Response) {
-    const orders = await orderRepository.list();
+    const orders = await orderUseCase.list();
     res.json(orders);
   }
 
   async create(req: Request, res: Response) {
-    const { customer, vehicle, price } = req.body;
-    if (!customer || !vehicle || !price) {
-      return res.status(400).json({ message: "customer, vehicle and price are required" });
+    try {
+      const created = await orderUseCase.create(req.body);
+      res.status(201).json(created);
+    } catch (error) {
+      if (error instanceof UseCaseError) {
+        return res.status(error.statusCode).json({ message: error.message });
+      }
+      throw error;
     }
-    const created = await orderRepository.create(req.body);
-    res.status(201).json(created);
   }
 
   async update(req: Request, res: Response) {
-    const updated = await orderRepository.update(req.params.id, req.body);
-    if (!updated) return res.status(404).json({ message: "Order not found" });
-    res.json(updated);
+    try {
+      const updated = await orderUseCase.update(req.params.id, req.body);
+      res.json(updated);
+    } catch (error) {
+      if (error instanceof UseCaseError) {
+        return res.status(error.statusCode).json({ message: error.message });
+      }
+      throw error;
+    }
   }
 }
