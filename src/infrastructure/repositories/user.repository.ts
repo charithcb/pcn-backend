@@ -1,8 +1,9 @@
 import { UserModel } from "../models/user.model";
 import { UserEntity } from "../../domain/user.entity";
 import { Types } from "mongoose";
+import { IUserRepository } from "../../domain/interfaces/user.repository.interface";
 
-export class UserRepository {
+export class UserRepository implements IUserRepository {
   async create(user: Partial<UserEntity>) {
     const instance = new UserModel(user);
     return instance.save();
