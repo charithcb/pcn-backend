@@ -1,17 +1,16 @@
 import "dotenv/config";
-import express from "express";
 import { connectDB } from "./config/db";
+import { env } from "./config/env";
+import { app } from "./app";
+import { configureMongoose } from "./infrastructure/db/mongoose.config";
 
-const app = express();
-const port = process.env.PORT || 5000;
+configureMongoose();
 
-app.get("/", (req, res) => {
-    res.send("PCN backend is running");
-});
+const start = async () => {
+  await connectDB();
+  app.listen(env.port, () => {
+    console.log(`Server running on port ${env.port}`);
+  });
+};
 
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-    connectDB();
-});
-
-
+start();
