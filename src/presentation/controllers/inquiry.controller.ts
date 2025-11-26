@@ -1,25 +1,36 @@
 import { Request, Response } from "express";
-import { InquiryRepository } from "../../infrastructure/repositories/inquiry.repository";
+import { InquiryService } from "../../services/inquiry.service";
+import { ServiceError } from "../../services/errors";
 
-const inquiryRepository = new InquiryRepository();
+const inquiryService = new InquiryService();
 
 export class InquiryController {
   async list(_req: Request, res: Response) {
-    const entries = await inquiryRepository.list();
-    res.json(entries);
+    const inquiries = await inquiryService.list();
+    res.json(inquiries);
   }
 
   async create(req: Request, res: Response) {
-    if (!req.body.message) {
-      return res.status(400).json({ message: "Message is required" });
+    try {
+      const created = await inquiryService.create(req.body);
+      res.status(201).json(created);
+    } catch (error) {
+      if (error instanceof ServiceError) {
+        return res.status(error.statusCode).json({ message: error.message });
+      }
+      throw error;
     }
-    const created = await inquiryRepository.create(req.body);
-    res.status(201).json(created);
   }
 
   async update(req: Request, res: Response) {
-    const updated = await inquiryRepository.update(req.params.id, req.body);
-    if (!updated) return res.status(404).json({ message: "Inquiry not found" });
-    res.json(updated);
+    try {
+      const updated = await inquiryService.update(req.params.id, req.body);
+      res.json(updated);
+    } catch (error) {
+      if (error instanceof ServiceError) {
+        return res.status(error.statusCode).json({ message: error.message });
+      }
+      throw error;
+    }
   }
 }

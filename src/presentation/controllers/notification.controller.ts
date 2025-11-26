@@ -1,19 +1,38 @@
 import { Request, Response } from "express";
-import { NotificationRepository } from "../../infrastructure/repositories/notification.repository";
+import { NotificationService } from "../../services/notification.service";
+import { ServiceError } from "../../services/errors";
 import { AuthenticatedRequest } from "../middleware/auth.middleware";
 
-const notificationRepository = new NotificationRepository();
+const notificationService = new NotificationService();
 
 export class NotificationController {
   async myNotifications(req: AuthenticatedRequest, res: Response) {
     if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-    const notifications = await notificationRepository.listForUser(req.user._id);
+    const notifications = await notificationService.listForUser(req.user._id);
     res.json(notifications);
   }
 
+  async create(req: Request, res: Response) {
+    try {
+      const created = await notificationService.create(req.body);
+      res.status(201).json(created);
+    } catch (error) {
+      if (error instanceof ServiceError) {
+        return res.status(error.statusCode).json({ message: error.message });
+      }
+      throw error;
+    }
+  }
+
   async markRead(req: Request, res: Response) {
-    const updated = await notificationRepository.markRead(req.params.id);
-    if (!updated) return res.status(404).json({ message: "Notification not found" });
-    res.json(updated);
+    try {
+      const updated = await notificationService.markRead(req.params.id);
+      res.json(updated);
+    } catch (error) {
+      if (error instanceof ServiceError) {
+        return res.status(error.statusCode).json({ message: error.message });
+      }
+      throw error;
+    }
   }
 }

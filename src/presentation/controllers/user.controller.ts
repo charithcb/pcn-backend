@@ -1,23 +1,36 @@
 import { Request, Response } from "express";
-import { UserRepository } from "../../infrastructure/repositories/user.repository";
+import { UserService } from "../../services/user.service";
+import { ServiceError } from "../../services/errors";
 
-const userRepository = new UserRepository();
+const userService = new UserService();
 
 export class UserController {
   async list(_req: Request, res: Response) {
-    const users = await userRepository.list();
-    res.json(users.map((u) => ({ ...u.toObject(), password: undefined })));
+    const users = await userService.list();
+    res.json(users);
   }
 
   async get(req: Request, res: Response) {
-    const user = await userRepository.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-    res.json({ ...user.toObject(), password: undefined });
+    try {
+      const user = await userService.get(req.params.id);
+      res.json(user);
+    } catch (error) {
+      if (error instanceof ServiceError) {
+        return res.status(error.statusCode).json({ message: error.message });
+      }
+      throw error;
+    }
   }
 
   async update(req: Request, res: Response) {
-    const updated = await userRepository.update(req.params.id, req.body);
-    if (!updated) return res.status(404).json({ message: "User not found" });
-    res.json({ ...updated.toObject(), password: undefined });
+    try {
+      const updated = await userService.update(req.params.id, req.body);
+      res.json(updated);
+    } catch (error) {
+      if (error instanceof ServiceError) {
+        return res.status(error.statusCode).json({ message: error.message });
+      }
+      throw error;
+    }
   }
 }
