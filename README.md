@@ -157,6 +157,16 @@ pcn-frontend/
 🔐 Authentication
 JWT-based auth
 
+⚙️ Configuration
+
+Create a `.env` file in `pcn-backend/` to configure the API. The most important variables for connecting the frontend are:
+
+- `PORT` – API port (defaults to `5000`).
+- `MONGO_URI` – connection string for MongoDB.
+- `JWT_SECRET` – secret used to sign access tokens.
+- `TOKEN_TTL_SECONDS` – JWT lifetime in seconds (defaults to 7 days).
+- `CORS_ORIGIN` – comma-separated list of allowed frontend origins (defaults to `http://localhost:5173`).
+
 Customers login → receive token
 
 Staff/Admin login → different role token
