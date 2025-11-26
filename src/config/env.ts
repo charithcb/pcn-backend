@@ -11,8 +11,10 @@ const numeric = (value: string | undefined, fallback: number) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const DEFAULT_ORIGINS = ["http://localhost:5173", "http://localhost:3000"];
+
 const parseOrigins = (value: string | undefined) => {
-  if (!value) return "http://localhost:5173";
+  if (!value) return DEFAULT_ORIGINS;
 
   const origins = value
     .split(",")
@@ -20,7 +22,7 @@ const parseOrigins = (value: string | undefined) => {
     .filter(Boolean);
 
   if (origins.length === 0) {
-    return "http://localhost:5173";
+    return DEFAULT_ORIGINS;
   }
 
   return origins.length === 1 ? origins[0] : origins;
