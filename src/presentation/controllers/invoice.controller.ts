@@ -1,26 +1,36 @@
 import { Request, Response } from "express";
-import { InvoiceRepository } from "../../infrastructure/repositories/invoice.repository";
+import { InvoiceService } from "../../services/invoice.service";
+import { ServiceError } from "../../services/errors";
 
-const invoiceRepository = new InvoiceRepository();
+const invoiceService = new InvoiceService();
 
 export class InvoiceController {
   async list(_req: Request, res: Response) {
-    const invoices = await invoiceRepository.list();
+    const invoices = await invoiceService.list();
     res.json(invoices);
   }
 
   async create(req: Request, res: Response) {
-    const { order, amount, dueDate, issuedTo } = req.body;
-    if (!order || !amount || !dueDate || !issuedTo) {
-      return res.status(400).json({ message: "order, amount, dueDate and issuedTo are required" });
+    try {
+      const created = await invoiceService.create(req.body);
+      res.status(201).json(created);
+    } catch (error) {
+      if (error instanceof ServiceError) {
+        return res.status(error.statusCode).json({ message: error.message });
+      }
+      throw error;
     }
-    const created = await invoiceRepository.create(req.body);
-    res.status(201).json(created);
   }
 
   async update(req: Request, res: Response) {
-    const updated = await invoiceRepository.update(req.params.id, req.body);
-    if (!updated) return res.status(404).json({ message: "Invoice not found" });
-    res.json(updated);
+    try {
+      const updated = await invoiceService.update(req.params.id, req.body);
+      res.json(updated);
+    } catch (error) {
+      if (error instanceof ServiceError) {
+        return res.status(error.statusCode).json({ message: error.message });
+      }
+      throw error;
+    }
   }
 }
